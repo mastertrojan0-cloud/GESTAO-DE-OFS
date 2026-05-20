@@ -1,0 +1,166 @@
+﻿{#- weekly_report.html — Relatório Semanal de Métricas -#}
+{% extends "reports/_base.html" %}
+{% block title %}Relatório Semanal — OFS/OFS{% endblock %}
+
+{% block content %}
+
+{# ── TÍTULO ── #}
+<h1 class="report-title">Relatório Semanal de Métricas</h1>
+
+{# ── META INFO ── #}
+<div class="meta-box">
+  <div class="meta-row">
+    <span class="meta-label">Semana:</span>
+    <span class="meta-value">{{ week_start }} a {{ week_end }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Empresa:</span>
+    <span class="meta-value">{{ company_name }}</span>
+  </div>
+  {% if generated_by %}
+  <div class="meta-row">
+    <span class="meta-label">Gerado por:</span>
+    <span class="meta-value">{{ generated_by }}</span>
+  </div>
+  {% endif %}
+  <div class="meta-row">
+    <span class="meta-label">Data de geração:</span>
+    <span class="meta-value">{{ generated_date }} {{ generated_time[:5] }}</span>
+  </div>
+</div>
+
+{# ── INDICADORES PRINCIPAIS ── #}
+<h2 class="section-title">Indicadores Principais</h2>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>INDICADOR</th>
+      <th class="col-number">VALOR</th>
+      <th class="col-center">STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ind in indicators %}
+    <tr>
+      <td>{{ ind.name }}</td>
+      <td class="col-number">
+        {% if ind.fmt == 'pct' %}
+          {{ '%.1f'|format(ind.value) }}%
+        {% elif ind.fmt == 'float' %}
+          {{ '%.1f'|format(ind.value) }}
+        {% else %}
+          {{ ind.value }}
+        {% endif %}
+      </td>
+      <td class="col-center">
+        {% if ind.status %}
+          {{ status_badge(ind.status) | safe }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{# ── GRÁFICOS LINHA 1 ── #}
+{% if charts.planned_vs_realized or charts.positive_vs_negative %}
+<div class="chart-row">
+  {% if charts.planned_vs_realized %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.planned_vs_realized }}" alt="Programado x Realizado">
+  </div>
+  {% endif %}
+  {% if charts.positive_vs_negative %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.positive_vs_negative }}" alt="Positivo x Negativo">
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── GRÁFICOS LINHA 2 ── #}
+{% if charts.ofc_by_company or charts.ofc_by_shift %}
+<div class="chart-row page-break">
+  {% if charts.ofc_by_company %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.ofc_by_company }}" alt="OFS por Empresa">
+  </div>
+  {% endif %}
+  {% if charts.ofc_by_shift %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.ofc_by_shift }}" alt="OFS por Turno">
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── EVOLUÇÃO SEMANAL ── #}
+{% if charts.weekly_evolution %}
+<div class="chart-container page-break">
+  <img src="data:image/png;base64,{{ charts.weekly_evolution }}" alt="Evolução Semanal">
+</div>
+{% endif %}
+
+{# ── TOP COMPORTAMENTOS ── #}
+{% if safe_behaviors or unsafe_behaviors %}
+<div class="page-break">
+  {% if safe_behaviors %}
+  <h2 class="section-title">Top 5 Comportamentos Seguros</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:12mm;">#</th>
+        <th>Comportamento</th>
+        <th class="col-number">Ocorrências</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in safe_behaviors %}
+      <tr>
+        <td class="col-center" style="color:#22C55E; font-weight:700;">{{ loop.index }}</td>
+        <td>{{ b.name }}</td>
+        <td class="col-number">{{ b.count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if unsafe_behaviors %}
+  <h2 class="section-title" style="margin-top:8mm;">Top 5 Comportamentos Inseguros</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:12mm;">#</th>
+        <th>Comportamento</th>
+        <th class="col-number">Ocorrências</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in unsafe_behaviors %}
+      <tr>
+        <td class="col-center" style="color:#EF4444; font-weight:700;">{{ loop.index }}</td>
+        <td>{{ b.name }}</td>
+        <td class="col-number">{{ b.count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── ASSINATURA ── #}
+{% if show_signature %}
+<div class="signature-block page-break">
+  <div class="signature-line"></div>
+  <div class="signature-name">{{ manager_name or '_________________________________' }}</div>
+  <div class="signature-role">{{ manager_role or 'Gestor Responsável' }}</div>
+  <div class="signature-date">Data: ___/___/______</div>
+</div>
+{% endif %}
+
+{% endblock %}

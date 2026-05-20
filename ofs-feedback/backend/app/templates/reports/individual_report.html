@@ -1,0 +1,106 @@
+﻿{#- individual_report.html — Relatório Individual de OFS/OFS -#}
+{% extends "reports/_base.html" %}
+{% block title %}Registro de OFS/OFS{% endblock %}
+
+{% block content %}
+
+{% for OFS in ofc_records %}
+<div class="OFS-card {% if OFS.type == 'POSITIVO' or OFS.type == 'SEGURO' %}positivo{% else %}negativo{% endif %} {% if not loop.first %}page-break{% endif %}">
+
+  {# ── CABEÇALHO DO CARD ── #}
+  <div class="OFS-card-header">
+    <div class="OFS-card-title">REGISTRO DE OFS/OFS</div>
+    <div style="font-weight:700; font-size:10pt; color:#CC0000;">Nº OFS: {{ OFS.number }}</div>
+  </div>
+
+  {# ── DADOS GERAIS ── #}
+  <div class="OFS-card-section-title">DADOS GERAIS</div>
+
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Data:</span>
+    <span class="OFS-card-value">{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Hora:</span>
+    <span class="OFS-card-value">{{ OFS.time or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Gerado por:</span>
+    <span class="OFS-card-value">{{ OFS.generated_by or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Empresa:</span>
+    <span class="OFS-card-value">{{ OFS.company_name or '—' }}</span>
+  </div>
+
+  {# ── DADOS DA OBSERVAÇÃO ── #}
+  <div class="OFS-card-section-title">DADOS DA OBSERVAÇÃO</div>
+
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Observado:</span>
+    <span class="OFS-card-value">{{ OFS.observed_person or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Atividade:</span>
+    <span class="OFS-card-value">{{ OFS.activity or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Local:</span>
+    <span class="OFS-card-value">{{ OFS.location or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Turno:</span>
+    <span class="OFS-card-value">{{ OFS.shift or '—' }}</span>
+  </div>
+  <div class="OFS-card-field">
+    <span class="OFS-card-label">Tipo:</span>
+    <span class="OFS-card-value">
+      {% if OFS.type == 'POSITIVO' or OFS.type == 'SEGURO' %}
+        {{ status_badge('SEGURO') | safe }}
+      {% else %}
+        {{ status_badge('INSEGURO') | safe }}
+      {% endif %}
+    </span>
+  </div>
+
+  {# ── COMPORTAMENTO OBSERVADO ── #}
+  <div class="OFS-card-section-title">COMPORTAMENTO OBSERVADO</div>
+  <div style="padding: 2mm 0; font-size: 9pt;">
+    {{ OFS.behavior_description or '—' }}
+  </div>
+
+  {# ── OBSERVAÇÃO COMPLEMENTAR ── #}
+  {% if OFS.complementary_note is defined and OFS.complementary_note %}
+  <div class="OFS-card-section-title">OBSERVAÇÃO COMPLEMENTAR</div>
+  <div style="padding: 2mm 0; font-size: 9pt;">
+    {{ OFS.complementary_note }}
+  </div>
+  {% endif %}
+
+  {# ── STATUS ── #}
+  <div style="margin-top: 4mm; text-align: right;">
+    Status: {{ status_badge(OFS.status or 'ATIVO') | safe }}
+  </div>
+
+  {# ── HISTÓRICO DE ALTERAÇÕES ── #}
+  {% if OFS.history is defined and OFS.history %}
+  <div class="history-block">
+    <strong style="color:#666666;">Histórico de alterações:</strong>
+    {% for entry in OFS.history %}
+    <div class="history-entry">
+      <div class="history-meta">
+        {{ entry.date | format_datetime if entry.date is defined else entry.date }} — {{ entry.user or 'Sistema' }} alterou {{ entry.field or 'registro' }}:
+      </div>
+      <div class="history-change">
+        <span class="history-from">De: {{ entry.from_value or '—' }}</span>
+        <span class="history-to">Para: {{ entry.to_value or '—' }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endfor %}
+
+{% endblock %}

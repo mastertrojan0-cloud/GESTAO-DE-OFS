@@ -1,0 +1,188 @@
+﻿{#- company_report.html — Relatório por Empresa -#}
+{% extends "reports/_base.html" %}
+{% block title %}Relatório por Empresa — OFS/OFS{% endblock %}
+
+{% block content %}
+
+{# ── TÍTULO ── #}
+<h1 class="report-title">Relatório por Empresa</h1>
+
+{# ── META INFO ── #}
+<div class="meta-box">
+  <div class="meta-row">
+    <span class="meta-label">Empresa:</span>
+    <span class="meta-value">{{ company_name }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Período:</span>
+    <span class="meta-value">{{ start_date }} a {{ end_date }}</span>
+  </div>
+  {% if generated_by %}
+  <div class="meta-row">
+    <span class="meta-label">Gerado por:</span>
+    <span class="meta-value">{{ generated_by }}</span>
+  </div>
+  {% endif %}
+  <div class="meta-row">
+    <span class="meta-label">Data de geração:</span>
+    <span class="meta-value">{{ generated_date }} {{ generated_time[:5] }}</span>
+  </div>
+</div>
+
+{# ── RESUMO ── #}
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-card-value">{{ summary.planned }}</div>
+    <div class="summary-card-label">OFS Programadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ summary.realized }}</div>
+    <div class="summary-card-label">OFS Realizadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#22C55E;">{{ summary.positive }}</div>
+    <div class="summary-card-label">Positivas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#EF4444;">{{ summary.negative }}</div>
+    <div class="summary-card-label">Negativas</div>
+  </div>
+</div>
+
+{# ── GRÁFICOS ── #}
+{% if charts.planned_vs_realized or charts.ofc_by_shift %}
+<div class="chart-row">
+  {% if charts.planned_vs_realized %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.planned_vs_realized }}" alt="Programado x Realizado">
+  </div>
+  {% endif %}
+  {% if charts.ofc_by_shift %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.ofc_by_shift }}" alt="OFS por Turno">
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── OFSS POSITIVAS ── #}
+{% if positive_OFSS %}
+<h2 class="section-title page-break">
+  OFSS Positivas / Seguras
+  <span style="font-size:9pt; font-weight:400; color:#666666;">({{ positive_OFSS | length }} registros)</span>
+</h2>
+
+<div class="OFS-compact-row">
+  {% set col1 = (positive_OFSS | batch((positive_OFSS | length + 1) // 2) | list) %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[0] if col1[0] %}
+    <div class="OFS-card-compact positivo">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge(OFS.status or 'ATIVO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if col1 | length > 1 %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[1] %}
+    <div class="OFS-card-compact positivo">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge(OFS.status or 'ATIVO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── OFSS NEGATIVAS ── #}
+{% if negative_OFSS %}
+<h2 class="section-title page-break">
+  OFSS Negativas / Inseguras
+  <span style="font-size:9pt; font-weight:400; color:#666666;">({{ negative_OFSS | length }} registros)</span>
+</h2>
+
+<div class="OFS-compact-row">
+  {% set col1 = (negative_OFSS | batch((negative_OFSS | length + 1) // 2) | list) %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[0] if col1[0] %}
+    <div class="OFS-card-compact negativo">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge(OFS.status or 'ATIVO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if col1 | length > 1 %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[1] %}
+    <div class="OFS-card-compact negativo">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge(OFS.status or 'ATIVO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── OFSS CANCELADAS ── #}
+{% if cancelled_OFSS %}
+<h2 class="section-title page-break">
+  OFSS Canceladas
+  <span style="font-size:9pt; font-weight:400; color:#666666;">({{ cancelled_OFSS | length }} registros)</span>
+</h2>
+
+<div class="OFS-compact-row">
+  {% set col1 = (cancelled_OFSS | batch((cancelled_OFSS | length + 1) // 2) | list) %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[0] if col1[0] %}
+    <div class="OFS-card-compact" style="border-left: 3pt solid #999999;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge('CANCELADO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if col1 | length > 1 %}
+  <div class="OFS-compact-col">
+    {% for OFS in col1[1] %}
+    <div class="OFS-card-compact" style="border-left: 3pt solid #999999;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1mm;">
+        <strong style="color:#CC0000;">Nº {{ OFS.number }}</strong>
+        <span>{{ OFS.date | format_date if OFS.date is defined else OFS.date }}</span>
+      </div>
+      <div><strong>Obs:</strong> {{ OFS.observed_person or '—' }}</div>
+      <div style="margin:1mm 0; color:#1A1A1A;">{{ (OFS.behavior_description or '—') | truncate(120) }}</div>
+      <div style="text-align:right;">{{ status_badge('CANCELADO') | safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

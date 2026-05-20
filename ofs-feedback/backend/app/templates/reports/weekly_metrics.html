@@ -1,0 +1,245 @@
+﻿{#- weekly_metrics.html — Relatório MÉTRICAS DA SEMANA (completo, 2-3 páginas) -#}
+{% extends "reports/_base.html" %}
+{% block title %}MÉTRICAS DA SEMANA — OFS/OFS{% endblock %}
+
+{% block content %}
+
+{# ── TÍTULO ── #}
+<h1 class="report-title">Relatório de Métricas Semanais</h1>
+
+{# ── META INFO ── #}
+<div class="meta-box">
+  <div class="meta-row">
+    <span class="meta-label">Semana:</span>
+    <span class="meta-value">{{ week_label }} &nbsp;|&nbsp; {{ week_start }} a {{ week_end }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Empresa:</span>
+    <span class="meta-value">{{ company_name }}</span>
+  </div>
+  {% if filters %}
+  <div class="meta-row">
+    <span class="meta-label">Filtros:</span>
+    <span class="meta-value">{{ filters }}</span>
+  </div>
+  {% endif %}
+  {% if generated_by %}
+  <div class="meta-row">
+    <span class="meta-label">Gerado por:</span>
+    <span class="meta-value">{{ generated_by }}</span>
+  </div>
+  {% endif %}
+  <div class="meta-row">
+    <span class="meta-label">Data de geração:</span>
+    <span class="meta-value">{{ generated_date }} {{ generated_time[:5] }}</span>
+  </div>
+</div>
+
+{# ── INDICADORES PRINCIPAIS (CARDS) ── #}
+<h2 class="section-title">Indicadores Principais</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-card-value">{{ indicators.pessoas_ativas }}</div>
+    <div class="summary-card-label">Pessoas Ativas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ indicators.ofc_programadas }}</div>
+    <div class="summary-card-label">OFS Programadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ indicators.ofc_realizadas }}</div>
+    <div class="summary-card-label">OFS Realizadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#22C55E;">{{ indicators.positivas }}</div>
+    <div class="summary-card-label">Positivas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#EF4444;">{{ indicators.negativas }}</div>
+    <div class="summary-card-label">Negativas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ '%.1f'|format(indicators.aderencia) }}%</div>
+    <div class="summary-card-label">Aderência</div>
+    {% if indicators.status_aderencia %}
+    <div style="margin-top:2px;">{{ status_badge(indicators.status_aderencia) | safe }}</div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── INDICADORES DETALHADOS ── #}
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#22C55E; font-size:14pt;">{{ '%.1f'|format(indicators.pct_seguro) }}%</div>
+    <div class="summary-card-label">% Seguro</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#EF4444; font-size:14pt;">{{ '%.1f'|format(indicators.pct_desvio) }}%</div>
+    <div class="summary-card-label">% Desvio</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="font-size:14pt;">{{ indicators.usuarios_ativos }}</div>
+    <div class="summary-card-label">Usuários Ativos</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="font-size:14pt;">{{ '%.1f'|format(indicators.media_ofc_por_usuario) }}</div>
+    <div class="summary-card-label">Média OFS / Usuário</div>
+  </div>
+</div>
+
+{# ── GRÁFICOS LINHA 1: Programado x Realizado | Positivo x Negativo ── #}
+{% if charts.planned_vs_realized or charts.positive_vs_negative %}
+<div class="chart-row">
+  {% if charts.planned_vs_realized %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.planned_vs_realized }}" alt="Programado x Realizado">
+  </div>
+  {% endif %}
+  {% if charts.positive_vs_negative %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.positive_vs_negative }}" alt="Positivo x Negativo">
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── GRÁFICOS LINHA 2: OFS por Empresa | OFS por Turno ── #}
+{% if charts.ofc_by_company or charts.ofc_by_shift %}
+<div class="chart-row page-break">
+  {% if charts.ofc_by_company %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.ofc_by_company }}" alt="OFS por Empresa">
+  </div>
+  {% endif %}
+  {% if charts.ofc_by_shift %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ charts.ofc_by_shift }}" alt="OFS por Turno">
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── TABELA CONSOLIDADA ── #}
+{% if consolidated %}
+<div{% if not charts.ofc_by_company and not charts.ofc_by_shift %} class="page-break"{% endif %}>
+  <h2 class="section-title">Tabela Consolidada</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>EMPRESA</th>
+        <th class="col-number">PES.ATIVAS</th>
+        <th class="col-number">PROGRAM.</th>
+        <th class="col-number">REALIZ.</th>
+        <th class="col-number">POSIT.</th>
+        <th class="col-number">NEGAT.</th>
+        <th class="col-number">ADER.%</th>
+        <th class="col-center">STATUS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in consolidated %}
+      <tr>
+        <td>{{ row.company }}</td>
+        <td class="col-number">{{ row.active_people }}</td>
+        <td class="col-number">{{ row.planned }}</td>
+        <td class="col-number">{{ row.realized }}</td>
+        <td class="col-number" style="color:#22C55E;">{{ row.positive }}</td>
+        <td class="col-number" style="color:#EF4444;">{{ row.negative }}</td>
+        <td class="col-number">{{ '%.1f'|format(row.adherence) }}%</td>
+        <td class="col-center">{{ status_badge(row.status) | safe if row.status else '—' }}</td>
+      </tr>
+      {% endfor %}
+      {% if totals_row %}
+      <tr style="font-weight:700; background:#F5F5F5 !important;">
+        <td><strong>TOTAL</strong></td>
+        <td class="col-number"><strong>{{ totals_row.active_people }}</strong></td>
+        <td class="col-number"><strong>{{ totals_row.planned }}</strong></td>
+        <td class="col-number"><strong>{{ totals_row.realized }}</strong></td>
+        <td class="col-number" style="color:#22C55E;"><strong>{{ totals_row.positive }}</strong></td>
+        <td class="col-number" style="color:#EF4444;"><strong>{{ totals_row.negative }}</strong></td>
+        <td class="col-number"><strong>{{ '%.1f'|format(totals_row.adherence) }}%</strong></td>
+        <td class="col-center"><strong>{{ totals_row.status }}</strong></td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{# ── EVOLUÇÃO SEMANAL ── #}
+{% if charts.weekly_evolution %}
+<div class="chart-container page-break">
+  <img src="data:image/png;base64,{{ charts.weekly_evolution }}" alt="Evolução Semanal">
+</div>
+{% endif %}
+
+{# ── TOP COMPORTAMENTOS ── #}
+{% if safe_behaviors or unsafe_behaviors %}
+<div class="page-break">
+  <h2 class="section-title">Top Comportamentos da Semana</h2>
+
+  <div class="chart-row">
+    {% if safe_behaviors %}
+    <div>
+      <h3 class="section-title" style="color:#22C55E; border-color:#22C55E; margin-top:0;">Top 5 Seguros</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:8mm;">#</th>
+            <th>Comportamento</th>
+            <th class="col-number">Ocorr.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in safe_behaviors %}
+          <tr>
+            <td class="col-center" style="color:#22C55E; font-weight:700;">{{ loop.index }}</td>
+            <td>{{ b.name }}</td>
+            <td class="col-number">{{ b.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if unsafe_behaviors %}
+    <div>
+      <h3 class="section-title" style="color:#EF4444; border-color:#EF4444; margin-top:0;">Top 5 Inseguros</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:8mm;">#</th>
+            <th>Comportamento</th>
+            <th class="col-number">Ocorr.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in unsafe_behaviors %}
+          <tr>
+            <td class="col-center" style="color:#EF4444; font-weight:700;">{{ loop.index }}</td>
+            <td>{{ b.name }}</td>
+            <td class="col-number">{{ b.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ── ASSINATURA ── #}
+{% if show_signature %}
+<div class="signature-block page-break">
+  <div class="signature-line"></div>
+  <div class="signature-name">{{ manager_name or '_________________________________' }}</div>
+  <div class="signature-role">{{ manager_role or 'Gestor Responsável' }}</div>
+  <div class="signature-date">Data: ___/___/______</div>
+</div>
+{% endif %}
+
+{% endblock %}

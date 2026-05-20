@@ -1,0 +1,173 @@
+﻿{#- monthly_report.html — Relatório Mensal de Métricas -#}
+{% extends "reports/_base.html" %}
+{% block title %}Relatório Mensal — OFS/OFS{% endblock %}
+
+{% block content %}
+
+{# ── TÍTULO ── #}
+<h1 class="report-title">Relatório Mensal de Métricas</h1>
+
+{# ── META INFO ── #}
+<div class="meta-box">
+  <div class="meta-row">
+    <span class="meta-label">Mês:</span>
+    <span class="meta-value">{{ month_label }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Empresa:</span>
+    <span class="meta-value">{{ company_name }}</span>
+  </div>
+  {% if generated_by %}
+  <div class="meta-row">
+    <span class="meta-label">Gerado por:</span>
+    <span class="meta-value">{{ generated_by }}</span>
+  </div>
+  {% endif %}
+  <div class="meta-row">
+    <span class="meta-label">Data de geração:</span>
+    <span class="meta-value">{{ generated_date }} {{ generated_time[:5] }}</span>
+  </div>
+</div>
+
+{# ── RESUMO MENSAL ── #}
+<h2 class="section-title">Resumo do Mês</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-card-value">{{ summary.total_realized }}</div>
+    <div class="summary-card-label">OFS Realizadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#22C55E;">{{ summary.total_positive }}</div>
+    <div class="summary-card-label">Positivas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value" style="color:#EF4444;">{{ summary.total_negative }}</div>
+    <div class="summary-card-label">Negativas</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ '%.1f'|format(summary.avg_adherence) }}%</div>
+    <div class="summary-card-label">Aderência Média</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-value">{{ '%.0f'|format(summary.avg_week_realized) }}</div>
+    <div class="summary-card-label">Média/Semana</div>
+  </div>
+</div>
+
+{# ── COMPARATIVO SEMANAL ── #}
+<h2 class="section-title">Comparativo Semanal</h2>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>INDICADOR</th>
+      {% for w in week_data %}
+      <th class="col-number">{{ w.label }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Programadas</td>
+      {% for w in week_data %}
+      <td class="col-number">{{ w.planned }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Realizadas</td>
+      {% for w in week_data %}
+      <td class="col-number">{{ w.realized }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Positivas</td>
+      {% for w in week_data %}
+      <td class="col-number" style="color:#22C55E;">{{ w.positive }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Negativas</td>
+      {% for w in week_data %}
+      <td class="col-number" style="color:#EF4444;">{{ w.negative }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Aderência</td>
+      {% for w in week_data %}
+      <td class="col-number">
+        {% set status = namespace(s='') %}
+        {% if w.adherence >= 85 %}
+          {% set status.s = 'OK' %}
+        {% elif w.adherence >= 70 %}
+          {% set status.s = 'ATENÇÃO' %}
+        {% else %}
+          {% set status.s = 'ALERTA' %}
+        {% endif %}
+        {{ '%.1f'|format(w.adherence) }}%
+        <br><span class="badge badge-{{ 'ok' if status.s == 'OK' else 'atencao' if status.s == 'ATENÇÃO' else 'alerta' }}" style="font-size:7pt; margin-top:1mm;">{{ status.s }}</span>
+      </td>
+      {% endfor %}
+    </tr>
+  </tbody>
+</table>
+
+{# ── GRÁFICO: EVOLUÇÃO MENSAL ── #}
+{% if charts.monthly_comparison %}
+<div class="chart-container page-break">
+  <img src="data:image/png;base64,{{ charts.monthly_comparison }}" alt="Comparativo Semanal do Mês">
+</div>
+{% endif %}
+
+{# ── GRÁFICO: POSITIVO x NEGATIVO ── #}
+{% if charts.positive_vs_negative %}
+<div class="chart-container">
+  <img src="data:image/png;base64,{{ charts.positive_vs_negative }}" alt="Positivo x Negativo (Mensal)">
+</div>
+{% endif %}
+
+{# ── EVOLUÇÃO SEMANAL ── #}
+{% if charts.weekly_evolution %}
+<div class="chart-container page-break">
+  <img src="data:image/png;base64,{{ charts.weekly_evolution }}" alt="Evolução Semanal">
+</div>
+{% endif %}
+
+{# ── TENDÊNCIA vs MÊS ANTERIOR ── #}
+{% if previous_month_label %}
+<div class="page-break">
+  <h2 class="section-title">Tendência vs Mês Anterior ({{ previous_month_label }})</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>INDICADOR</th>
+        <th class="col-number">ATUAL</th>
+        <th class="col-number">TENDÊNCIA</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>OFS Realizadas</td>
+        <td class="col-number">{{ summary.total_realized }}</td>
+        <td class="col-center">
+          <span class="{{ summary.trend_realized_class }}">{{ summary.trend_realized }}</span>
+        </td>
+      </tr>
+      <tr>
+        <td>Aderência Média</td>
+        <td class="col-number">{{ '%.1f'|format(summary.avg_adherence) }}%</td>
+        <td class="col-center">
+          <span class="{{ summary.trend_adherence_class }}">{{ summary.trend_adherence }}</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:8pt; color:#999999; margin-top:3mm; text-align:center;">
+    ↑ Melhora (+3%) &nbsp;&nbsp; ↓ Piora (-3%) &nbsp;&nbsp; → Estável
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,461 @@
+﻿{#- _base.html — Template base com header, footer e CSS corporativo -#}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Sistema OFS/OFS - Security Dynamics">
+<title>{% block title %}Relatório OFS/OFS{% endblock %}</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@page {
+  size: A4;
+  margin: 22mm 20mm 25mm 20mm;
+  @top-center { content: element(pageHeader); }
+  @bottom-center { content: element(pageFooter); }
+}
+
+@page landscape {
+  size: A4 landscape;
+  margin: 18mm 18mm 22mm 18mm;
+}
+
+body {
+  font-family: 'Inter', 'DejaVu Sans', Arial, sans-serif;
+  font-size: 10pt;
+  color: #1A1A1A;
+  line-height: 1.5;
+  background: #FFFFFF;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════ */
+#pageHeader {
+  position: running(pageHeader);
+  width: 100%;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1.5pt solid #CC0000;
+  margin-bottom: 5mm;
+}
+
+.header-logo-img {
+  height: 18mm;
+  width: auto;
+  max-width: 55mm;
+  object-fit: contain;
+}
+
+.header-logo-text {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #CC0000;
+  letter-spacing: 0.5pt;
+}
+
+.header-system-info {
+  text-align: right;
+}
+
+.header-system-name {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.2;
+}
+
+.header-system-sub {
+  font-size: 8pt;
+  font-weight: 400;
+  color: #666666;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════════ */
+#pageFooter {
+  position: running(pageFooter);
+  width: 100%;
+}
+
+.footer-inner {
+  border-top: 1.5pt solid #CC0000;
+  padding-top: 10px;
+  font-size: 8pt;
+  color: #666666;
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-center {
+  text-align: center;
+  margin-top: 1px;
+  font-size: 7pt;
+  color: #999999;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TIPOGRAFIA
+   ═══════════════════════════════════════════════════════════════ */
+.report-title {
+  font-size: 18pt;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 4mm;
+  text-transform: uppercase;
+  letter-spacing: 0.5pt;
+}
+
+.report-subtitle {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #CC0000;
+  margin-bottom: 3mm;
+}
+
+.section-title {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-top: 6mm;
+  margin-bottom: 3mm;
+  padding-bottom: 1mm;
+  border-bottom: 1pt solid #CCCCCC;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   META INFO BOX
+   ═══════════════════════════════════════════════════════════════ */
+.meta-box {
+  background: #F5F5F5;
+  border-left: 3pt solid #CC0000;
+  padding: 4mm 6mm;
+  margin-bottom: 5mm;
+  font-size: 10pt;
+}
+
+.meta-row {
+  display: flex;
+  gap: 2mm;
+  margin-bottom: 1.5mm;
+}
+
+.meta-row:last-child { margin-bottom: 0; }
+
+.meta-label {
+  font-weight: 600;
+  color: #666666;
+  min-width: 38mm;
+  flex-shrink: 0;
+}
+
+.meta-value {
+  color: #1A1A1A;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABELAS
+   ═══════════════════════════════════════════════════════════════ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 5mm;
+  font-size: 9pt;
+}
+
+.data-table thead th {
+  background: #CC0000;
+  color: #FFFFFF;
+  padding: 7px 10px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 9pt;
+  border: none;
+}
+
+.data-table thead th:first-child { border-radius: 3px 0 0 0; }
+.data-table thead th:last-child  { border-radius: 0 3px 0 0; }
+
+.data-table tbody td {
+  padding: 5px 10px;
+  border-bottom: 0.5pt solid #E5E5E5;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:nth-child(even) { background: #F5F5F5; }
+.data-table tbody tr:nth-child(odd)  { background: #FFFFFF; }
+
+.data-table .col-number { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .col-center { text-align: center; }
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS BADGES
+   ═══════════════════════════════════════════════════════════════ */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3pt;
+}
+
+.badge-ok        { background: #22C55E; color: #FFFFFF; }
+.badge-atencao   { background: #EAB308; color: #1A1A1A; }
+.badge-alerta    { background: #EF4444; color: #FFFFFF; }
+.badge-seguro    { background: #22C55E; color: #FFFFFF; }
+.badge-inseguro  { background: #EF4444; color: #FFFFFF; }
+.badge-cancelado { background: #999999; color: #FFFFFF; }
+.badge-editado   { background: #3B82F6; color: #FFFFFF; }
+
+/* ═══════════════════════════════════════════════════════════════
+   GRÁFICOS
+   ═══════════════════════════════════════════════════════════════ */
+.chart-container {
+  margin: 4mm 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+.chart-container img {
+  max-width: 100%;
+  height: auto;
+}
+
+.chart-row {
+  display: flex;
+  gap: 5mm;
+  justify-content: space-between;
+  page-break-inside: avoid;
+}
+
+.chart-row .chart-container { flex: 1; }
+
+.chart-row .chart-container img {
+  max-width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OFS CARD (Registro individual)
+   ═══════════════════════════════════════════════════════════════ */
+.OFS-card {
+  border: 1pt solid #CCCCCC;
+  border-radius: 3px;
+  padding: 4mm;
+  margin-bottom: 4mm;
+  page-break-inside: avoid;
+}
+
+.OFS-card.positivo { border-left: 4pt solid #22C55E; }
+.OFS-card.negativo { border-left: 4pt solid #EF4444; }
+
+.OFS-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3mm;
+  padding-bottom: 2mm;
+  border-bottom: 1pt solid #E5E5E5;
+}
+
+.OFS-card-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.OFS-card-field {
+  display: flex;
+  margin-bottom: 1.5mm;
+}
+
+.OFS-card-label {
+  font-weight: 600;
+  min-width: 35mm;
+  color: #666666;
+  font-size: 9pt;
+  flex-shrink: 0;
+}
+
+.OFS-card-value {
+  font-size: 9pt;
+  color: #1A1A1A;
+}
+
+.OFS-card-section-title {
+  font-weight: 700;
+  font-size: 9pt;
+  color: #CC0000;
+  padding: 2mm 0 1mm;
+  margin-top: 2mm;
+  border-top: 0.5pt dashed #E5E5E5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OFS CARD COMPACT (2 por linha)
+   ═══════════════════════════════════════════════════════════════ */
+.OFS-card-compact {
+  border: 1pt solid #E5E5E5;
+  padding: 3mm;
+  font-size: 8pt;
+  page-break-inside: avoid;
+}
+
+.OFS-card-compact.positivo { border-left: 3pt solid #22C55E; }
+.OFS-card-compact.negativo { border-left: 3pt solid #EF4444; }
+
+.OFS-compact-row {
+  display: flex;
+  gap: 5mm;
+}
+
+.OFS-compact-col {
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HISTÓRICO DE ALTERAÇÕES
+   ═══════════════════════════════════════════════════════════════ */
+.history-block {
+  margin-top: 3mm;
+  padding-top: 2mm;
+  border-top: 0.5pt dashed #CCCCCC;
+  font-size: 8pt;
+}
+
+.history-entry {
+  margin-bottom: 1.5mm;
+  padding-left: 5mm;
+}
+
+.history-meta { color: #666666; margin-bottom: 0.5mm; }
+
+.history-change { display: flex; gap: 3mm; }
+
+.history-from { color: #EF4444; text-decoration: line-through; }
+.history-to   { color: #22C55E; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ASSINATURA
+   ═══════════════════════════════════════════════════════════════ */
+.signature-block {
+  margin-top: 15mm;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+.signature-line {
+  width: 60%;
+  margin: 0 auto 3mm;
+  border-bottom: 1pt solid #1A1A1A;
+}
+
+.signature-name { font-weight: 600; font-size: 11pt; }
+.signature-role { font-size: 9pt; color: #666666; }
+
+.signature-date {
+  margin-top: 5mm;
+  font-size: 9pt;
+  color: #666666;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TENDÊNCIAS
+   ═══════════════════════════════════════════════════════════════ */
+.trend-up    { color: #22C55E; font-weight: 700; font-size: 12pt; }
+.trend-down  { color: #EF4444; font-weight: 700; font-size: 12pt; }
+.trend-stable{ color: #666666; font-weight: 700; font-size: 12pt; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESUMO BOX
+   ═══════════════════════════════════════════════════════════════ */
+.summary-grid {
+  display: flex;
+  gap: 3mm;
+  margin-bottom: 5mm;
+  page-break-inside: avoid;
+}
+
+.summary-card {
+  flex: 1;
+  text-align: center;
+  padding: 4mm;
+  background: #F5F5F5;
+  border-radius: 3px;
+}
+
+.summary-card-value {
+  font-size: 20pt;
+  font-weight: 700;
+  color: #CC0000;
+}
+
+.summary-card-label {
+  font-size: 8pt;
+  color: #666666;
+  margin-top: 1mm;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+   ═══════════════════════════════════════════════════════════════ */
+.page-break { page-break-before: always; }
+.no-break   { page-break-inside: avoid; }
+.landscape-page { page: landscape; }
+
+.content {
+  margin-top: 2mm;
+}
+
+</style>
+</head>
+<body>
+
+{#- ── HEADER ── -#}
+<div id="pageHeader">
+  <div class="header-inner">
+    <div class="header-logo">
+      {% if logo_base64 %}
+      <img class="header-logo-img" src="data:{{ logo_mime }};base64,{{ logo_base64 }}" alt="Security Dynamics">
+      {% else %}
+      <span class="header-logo-text">SECURITY<br>DYNAMICS</span>
+      {% endif %}
+    </div>
+    <div class="header-system-info">
+      <div class="header-system-name">SISTEMA DE FEEDBACK<br>COMPORTAMENTAL</div>
+      <div class="header-system-sub">OFS/OFS</div>
+    </div>
+  </div>
+</div>
+
+{#- ── FOOTER ── -#}
+<div id="pageFooter">
+  <div class="footer-inner">
+    <div class="footer-row">
+      <span>Gerado em: {{ generated_date }} {{ generated_time[:5] }}</span>
+      <span>Página <span class="pageCounter"></span></span>
+    </div>
+    <div class="footer-center">Security Dynamics — Documento gerado automaticamente pelo Sistema OFS/OFS</div>
+  </div>
+</div>
+
+{#- ── CONTEÚDO PRINCIPAL ── -#}
+<div class="content">
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

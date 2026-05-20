@@ -1,0 +1,150 @@
+﻿{#- individual_ofc.html — Relatorio Individual OFS/OFS (single record) -#}
+{% extends "reports/_base.html" %}
+{% block title %}Registro OFS/OFS — {{ OFS.codigo }}{% endblock %}
+
+{% block content %}
+
+<h1 class="report-title">Registro Individual OFS/OFS</h1>
+
+<div class="meta-box">
+  <div class="meta-row">
+    <span class="meta-label">Codigo:</span>
+    <span class="meta-value" style="font-size:14pt; font-weight:700; color:#CC0000;">{{ OFS.codigo }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Data:</span>
+    <span class="meta-value">{{ OFS.data }} {{ OFS.hora }}</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Empresa:</span>
+    <span class="meta-value">{{ OFS.empresa_nome }}</span>
+  </div>
+  {% if OFS.contrato_nome %}
+  <div class="meta-row">
+    <span class="meta-label">Contrato:</span>
+    <span class="meta-value">{{ OFS.contrato_nome }}</span>
+  </div>
+  {% endif %}
+  <div class="meta-row">
+    <span class="meta-label">Gerado por:</span>
+    <span class="meta-value">{{ OFS.usuario_gerador_nome }} ({{ OFS.usuario_gerador_perfil or '-' }})</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Data de emissao:</span>
+    <span class="meta-value">{{ generated_date }} {{ generated_time[:5] }}</span>
+  </div>
+</div>
+
+{# ── DADOS DA OBSERVACAO ── #}
+<h2 class="section-title">Dados da Observacao</h2>
+
+<table class="data-table">
+  <tbody>
+    <tr>
+      <td style="width:40mm; font-weight:600; color:#666666;">Observado</td>
+      <td>{{ OFS.nome_observado }}</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Atividade</td>
+      <td>{{ OFS.atividade }}</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Local</td>
+      <td>{{ OFS.local }}</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Turno</td>
+      <td>{{ OFS.turno }}</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Tipo</td>
+      <td>
+        {% if OFS.tipo == 'OFS' %}
+          {{ status_badge('SEGURO') | safe }}
+        {% elif OFS.tipo == 'OFS' %}
+          {{ status_badge('INSEGURO') | safe }}
+        {% else %}
+          {{ OFS.tipo }}
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Status</td>
+      <td>{{ status_badge(OFS.status | upper if OFS.status else 'ATIVO') | safe }}</td>
+    </tr>
+  </tbody>
+</table>
+
+{# ── COMPORTAMENTO OBSERVADO ── #}
+<h2 class="section-title">Comportamento Observado</h2>
+
+<div class="OFS-card {% if OFS.tipo == 'OFS' %}positivo{% else %}negativo{% endif %}">
+  <div style="padding: 3mm; font-size: 10pt; line-height: 1.6;">
+    {{ OFS.comportamento or 'Nao informado.' }}
+  </div>
+</div>
+
+{# ── OBSERVACAO COMPLEMENTAR ── #}
+{% if OFS.observacao %}
+<h2 class="section-title">Observacao Complementar</h2>
+
+<div style="padding: 3mm; font-size: 9pt; color: #4B5563; border-left: 3pt solid #CCCCCC; margin-left: 2mm;">
+  {{ OFS.observacao }}
+</div>
+{% endif %}
+
+{# ── HISTORICO DE ALTERACOES ── #}
+{% if edit_logs %}
+<h2 class="section-title">Historico de Alteracoes</h2>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Data/Hora</th>
+      <th>Campo</th>
+      <th>De</th>
+      <th>Para</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in edit_logs %}
+    <tr>
+      <td>{{ log.editado_em | format_datetime }}</td>
+      <td>{{ log.campo }}</td>
+      <td style="color:#EF4444; text-decoration:line-through;">{{ log.valor_anterior[:80] if log.valor_anterior else '—' }}</td>
+      <td style="color:#22C55E;">{{ log.valor_novo[:80] if log.valor_novo else '—' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{# ── METADADOS ── #}
+<h2 class="section-title">Metadados do Registro</h2>
+
+<table class="data-table">
+  <tbody>
+    <tr>
+      <td style="width:35mm; font-weight:600; color:#666666;">Criado em</td>
+      <td>{{ OFS.created_at | format_datetime if OFS.created_at else '—' }}</td>
+    </tr>
+    {% if OFS.editado_em %}
+    <tr>
+      <td style="font-weight:600; color:#666666;">Ultima edicao</td>
+      <td>{{ OFS.editado_em | format_datetime }}</td>
+    </tr>
+    {% endif %}
+    {% if OFS.status == 'cancelado' %}
+    <tr>
+      <td style="font-weight:600; color:#666666; color:#EF4444;">Cancelado em</td>
+      <td style="color:#EF4444;">{{ OFS.cancelado_em | format_datetime if OFS.cancelado_em else '—' }}</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600; color:#666666;">Motivo</td>
+      <td>{{ OFS.motivo_cancelamento or 'Nao informado.' }}</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+{% endblock %}
