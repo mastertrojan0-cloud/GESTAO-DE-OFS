@@ -143,6 +143,25 @@ Para acessar o sistema fora da rede local (home office, celular 4G/5G, outra uni
 
 **Vantagens:** túnel WireGuard criptografado ponta-a-ponta, sem precisar abrir portas no roteador, sem IP público, com ACLs por usuário/grupo na tailnet.
 
+## 🚀 Setup (Primeira vez)
+
+Se é a primeira vez rodando o sistema na máquina, execute como **administrador**:
+
+```cmd
+cd ofs-feedback
+setup_primeira_vez.bat
+```
+
+Ele faz automaticamente:
+1. ✅ Inicia PostgreSQL (se estiver parado)
+2. ✅ Cria role `ofs_app` e database `ofs_db`
+3. ✅ Carrega schema e seed (`ddl_sistema_ofs.sql`)
+4. ✅ Instala dependências Node (`npm install`)
+
+Roda **uma única vez** — depois cria um marcador em `%LOCALAPPDATA%\gestao_ofs.setup_ok` pra não repetir.
+
+---
+
 ## Atalho na Área de Trabalho
 
 Para deixar o sistema a um clique de distância, com ícone próprio (escudo azul com "OFS"):
@@ -175,6 +194,7 @@ schtasks /Run /TN "GESTAO_DE_OFS_Autostart"
 
 | Script | Função |
 |---|---|
+| `setup_primeira_vez.bat` | PostgreSQL + role + database + schema + npm (roda uma única vez) |
 | `criar_atalho.bat` | Gera ícone customizado e atalho **GESTÃO DE OFS** na Área de Trabalho |
 | `iniciar.bat` | Sobe tudo manualmente com painel de controle interativo |
 | `iniciar_silencioso.vbs` | Sobe tudo em background (sem janela) — usado pelo autostart |
@@ -185,5 +205,5 @@ schtasks /Run /TN "GESTAO_DE_OFS_Autostart"
 
 ## Changelog recente
 
-- **2026-05-21** — Inicialização automática com o Windows via Agendador de Tarefas (`instalar_autostart.bat` + `iniciar_silencioso.vbs`); configuração de firewall e suporte a acesso remoto via Tailscale (`configurar_rede.bat`); atalho na Área de Trabalho com ícone customizado escudo OFS (`criar_atalho.bat`).
+- **2026-05-21** — Inicialização automática com o Windows via Agendador de Tarefas (`instalar_autostart.bat` + `iniciar_silencioso.vbs`); configuração de firewall e suporte a acesso remoto via Tailscale (`configurar_rede.bat`); atalho na Área de Trabalho com ícone customizado escudo OFS (`criar_atalho.bat`); **setup de primeira vez** que cria role PostgreSQL, database e carrega schema automaticamente (`setup_primeira_vez.bat`).
 - **2026-05-20** — Sigla unificada para OFS (remoção total de "OFC" do layout); bandeiras SVG; campo "Nome do Observado" removido dos formulários (enviado automaticamente como "Não informado"); módulo de cadastro de usuários visível na sidebar; nome do sistema padronizado para "GESTÃO DE OFS"; copyright Antonio Martinez; acesso LAN habilitado.
