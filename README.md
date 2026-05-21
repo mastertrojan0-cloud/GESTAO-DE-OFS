@@ -112,10 +112,66 @@ Fallback estático em `src/lib/empresasFallback.ts` — usado automaticamente ca
 - `Turno`: ADM, 1, 2, 3
 - `StatusRegistro`: Gerado, Editado, Cancelado
 
-## Acesso pela rede local
+## Acesso pela rede local (LAN)
 
-O Vite escuta em `0.0.0.0:3000` e o uvicorn deve subir com `--host 0.0.0.0`. Usuários cadastrados (admin → Cadastrar Usuário) fazem login normalmente pela rede local.
+O Vite escuta em `0.0.0.0:3000` e o uvicorn sobe em `--host 0.0.0.0:8000`. Usuários cadastrados (admin → Cadastrar Usuário) fazem login normalmente pela rede local.
+
+**Configuração rápida (uma vez, como administrador):**
+
+```cmd
+cd ofs-feedback
+configurar_rede.bat
+```
+
+O script libera as portas **3000** (frontend) e **8000** (API) no Windows Firewall (perfis Private e Domain) e lista todos os IPs disponíveis para acesso.
+
+Depois disso, qualquer máquina da LAN acessa em `http://<IP-DO-HOST>:3000`.
+
+## Acesso remoto via Tailscale
+
+Para acessar o sistema fora da rede local (home office, celular 4G/5G, outra unidade) sem expor o servidor à internet pública, use [Tailscale](https://tailscale.com):
+
+1. **No servidor (host):**
+   - Instale o Tailscale Windows: <https://tailscale.com/download/windows>
+   - Faça login na sua tailnet.
+   - Rode `configurar_rede.bat` como administrador — ele detecta o Tailscale e mostra o IP da tailnet (ex.: `http://100.x.y.z:3000`) e o nome MagicDNS (ex.: `http://servidor-ofs:3000`).
+
+2. **Nos clientes (notebooks/celulares):**
+   - Instale o Tailscale no dispositivo.
+   - Faça login na mesma tailnet.
+   - Acesse `http://<IP-TAILSCALE>:3000` ou `http://<nome-magicdns>:3000`.
+
+**Vantagens:** túnel WireGuard criptografado ponta-a-ponta, sem precisar abrir portas no roteador, sem IP público, com ACLs por usuário/grupo na tailnet.
+
+## Inicialização automática com o Windows
+
+Para que o sistema suba sozinho toda vez que a máquina ligar:
+
+1. Abra a pasta `ofs-feedback`.
+2. Clique com o botão direito em **`instalar_autostart.bat`** → **Executar como administrador**.
+
+O script registra uma **Tarefa Agendada** (`GESTAO_DE_OFS_Autostart`) que dispara no logon de qualquer usuário e executa `iniciar_silencioso.vbs`, subindo PostgreSQL, FastAPI e o servidor frontend em background (sem janela de console).
+
+**Para testar agora sem reiniciar:**
+
+```cmd
+schtasks /Run /TN "GESTAO_DE_OFS_Autostart"
+```
+
+**Para remover o autostart:** rode `desinstalar_autostart.bat` como administrador.
+
+### Scripts disponíveis em `ofs-feedback/`
+
+| Script | Função |
+|---|---|
+| `iniciar.bat` | Sobe tudo manualmente com painel de controle interativo |
+| `iniciar_silencioso.vbs` | Sobe tudo em background (sem janela) — usado pelo autostart |
+| `instalar_autostart.bat` | Registra tarefa agendada de logon (admin) |
+| `desinstalar_autostart.bat` | Remove a tarefa agendada (admin) |
+| `configurar_rede.bat` | Libera firewall 3000/8000 e mostra IPs LAN + Tailscale (admin) |
+| `stop.bat` | Para todos os serviços |
 
 ## Changelog recente
 
+- **2026-05-21** — Inicialização automática com o Windows via Agendador de Tarefas (`instalar_autostart.bat` + `iniciar_silencioso.vbs`); configuração de firewall e suporte a acesso remoto via Tailscale (`configurar_rede.bat`).
 - **2026-05-20** — Sigla unificada para OFS (remoção total de "OFC" do layout); bandeiras SVG; campo "Nome do Observado" removido dos formulários (enviado automaticamente como "Não informado"); módulo de cadastro de usuários visível na sidebar; nome do sistema padronizado para "GESTÃO DE OFS"; copyright Antonio Martinez; acesso LAN habilitado.
