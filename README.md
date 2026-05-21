@@ -143,6 +143,17 @@ Para acessar o sistema fora da rede local (home office, celular 4G/5G, outra uni
 
 **Vantagens:** túnel WireGuard criptografado ponta-a-ponta, sem precisar abrir portas no roteador, sem IP público, com ACLs por usuário/grupo na tailnet.
 
+## Atalho na Área de Trabalho
+
+Para deixar o sistema a um clique de distância, com ícone próprio (escudo azul com "OFS"):
+
+```cmd
+cd ofs-feedback
+criar_atalho.bat
+```
+
+O script gera `ofs-feedback/assets/ofs.ico` (escudo circular azul, faixa verde, "OFS" em branco) e cria o atalho **GESTÃO DE OFS** na Área de Trabalho apontando para o `iniciar.bat`. Duplo clique sobe todo o sistema.
+
 ## Inicialização automática com o Windows
 
 Para que o sistema suba sozinho toda vez que a máquina ligar:
@@ -164,6 +175,7 @@ schtasks /Run /TN "GESTAO_DE_OFS_Autostart"
 
 | Script | Função |
 |---|---|
+| `criar_atalho.bat` | Gera ícone customizado e atalho **GESTÃO DE OFS** na Área de Trabalho |
 | `iniciar.bat` | Sobe tudo manualmente com painel de controle interativo |
 | `iniciar_silencioso.vbs` | Sobe tudo em background (sem janela) — usado pelo autostart |
 | `instalar_autostart.bat` | Registra tarefa agendada de logon (admin) |
@@ -173,5 +185,5 @@ schtasks /Run /TN "GESTAO_DE_OFS_Autostart"
 
 ## Changelog recente
 
-- **2026-05-21** — Inicialização automática com o Windows via Agendador de Tarefas (`instalar_autostart.bat` + `iniciar_silencioso.vbs`); configuração de firewall e suporte a acesso remoto via Tailscale (`configurar_rede.bat`).
+- **2026-05-21** — Inicialização automática com o Windows via Agendador de Tarefas (`instalar_autostart.bat` + `iniciar_silencioso.vbs`); configuração de firewall e suporte a acesso remoto via Tailscale (`configurar_rede.bat`); atalho na Área de Trabalho com ícone customizado escudo OFS (`criar_atalho.bat`).
 - **2026-05-20** — Sigla unificada para OFS (remoção total de "OFC" do layout); bandeiras SVG; campo "Nome do Observado" removido dos formulários (enviado automaticamente como "Não informado"); módulo de cadastro de usuários visível na sidebar; nome do sistema padronizado para "GESTÃO DE OFS"; copyright Antonio Martinez; acesso LAN habilitado.
